@@ -25,3 +25,4 @@ libs
 lib-sources
 temp
 *.lnk
+cache.json
