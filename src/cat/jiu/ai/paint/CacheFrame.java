@@ -14,15 +14,20 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 public class CacheFrame extends JFrame {
 	private static final long serialVersionUID = -3888944233405830070L;
+	
+	final DefaultMutableTreeNode root = new DefaultMutableTreeNode(I18n.format("main.cache"), true);
+	final JTree tree = new JTree(root);
+	final Cache caches;
+	
 	public CacheFrame(Cache caches) {
 		super(I18n.format("main.cache"));
+		this.caches = caches;
 		super.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		super.setLayout(new BorderLayout());
 		
 		NovelAITagHelper main = NovelAITagHelper.main;
 		super.setBounds(main.getX()+main.getWidth(), main.getY(), 298, main.getHeight());
 		
-		DefaultMutableTreeNode root = new DefaultMutableTreeNode(I18n.format("main.cache"), true);
 		for(Entry<String, Map<String, Integer>> cache : caches.entrySet()) {
 			DefaultMutableTreeNode cacheNode = new DefaultMutableTreeNode(cache.getKey());
 			for(Entry<String, Integer> tag : cache.getValue().entrySet()) {
@@ -30,7 +35,6 @@ public class CacheFrame extends JFrame {
 			}
 			root.add(cacheNode);
 		}
-		JTree tree = new JTree(root);
 		
 		JScrollPane treePane = new JScrollPane(tree);
 		this.getContentPane().add(treePane, BorderLayout.CENTER);
@@ -90,5 +94,17 @@ public class CacheFrame extends JFrame {
 			}
 		}, 20));
 		this.getContentPane().add(south, BorderLayout.SOUTH);
+	}
+	
+	public void updataUI() {
+		root.removeAllChildren();
+		for(Entry<String, Map<String, Integer>> cache : caches.entrySet()) {
+			DefaultMutableTreeNode cacheNode = new DefaultMutableTreeNode(cache.getKey());
+			for(Entry<String, Integer> tag : cache.getValue().entrySet()) {
+				cacheNode.add(new DefaultMutableTreeNode(Utils.getTag(tag.getKey())+"="+tag.getValue()));
+			}
+			root.add(cacheNode);
+		}
+		tree.updateUI();
 	}
 }

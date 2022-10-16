@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.List;
 
 import javax.swing.DefaultListModel;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -48,14 +49,46 @@ public class TagFrame extends JFrame {
 		js.setBounds(0, 0, 100, 100);
 		this.getContentPane().add(js, BorderLayout.CENTER);
 		
-		JPanel down = new JPanel();
-		down.setLayout(new FlowLayout(FlowLayout.LEADING,1,1));
+		this.getContentPane().add(new SimpleButton(I18n.format("main.cache.add"), new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				if(!list.isSelectionEmpty()) {
+					JDialog choiceCache = new JDialog(TagFrame.this, I18n.format("main.cache.choice_cache"), true);
+					choiceCache.setBounds(TagFrame.this.getX(), TagFrame.this.getY(), 256, TagFrame.this.getHeight());
+					choiceCache.setLayout(new BorderLayout());
+					
+					JList<String> cachelist = new JList<>();
+					JScrollPane js = new JScrollPane(cachelist);
+					DefaultListModel<String> normalModel = new DefaultListModel<>();
+					for(String name : NovelAITagHelper.main.cache.keySet()) {
+						normalModel.addElement(name);
+					}
+					cachelist.setFont(NovelAITagHelper.font);
+					cachelist.setModel(normalModel);
+					
+					cachelist.addMouseListener(new MouseAdapter() {
+						public void mouseClicked(MouseEvent e) {
+							if(e.getClickCount() >= 2) {
+								NovelAITagHelper.main.cache.add(cachelist.getSelectedValue(), list.getSelectedValue(), 0);
+								choiceCache.dispose();
+							}
+						}
+					});
+					
+					js.setBounds(0, 0, 100, 100);
+					choiceCache.add(js, BorderLayout.CENTER);
+					choiceCache.setVisible(true);
+				}
+			}
+		},20), BorderLayout.NORTH);
+		
+		JPanel south = new JPanel();
+		south.setLayout(new FlowLayout(FlowLayout.LEADING,1,1));
 		
 		JTextField searchText = new JTextField(10);
 		searchText.setFont(NovelAITagHelper.font);
-		down.add(searchText);
+		south.add(searchText);
 		
-		down.add(new SimpleButton(I18n.format("main.search"), new MouseAdapter() {
+		south.add(new SimpleButton(I18n.format("main.search"), new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				if(!searchText.getText().isEmpty()) {
 					TagFrame.this.searchReult.clear();
@@ -86,8 +119,7 @@ public class TagFrame extends JFrame {
 				}
 			}
 		}, 15));
-		
-		this.getContentPane().add(down, BorderLayout.SOUTH);
+		this.getContentPane().add(south, BorderLayout.SOUTH);
 	}
 	
 	protected void addResultToTag(JTextField currentCNTags, String result) {

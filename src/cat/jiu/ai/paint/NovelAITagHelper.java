@@ -5,7 +5,6 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -23,7 +22,6 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -38,7 +36,17 @@ public class NovelAITagHelper extends JFrame {
 			initTags();
 			main = new NovelAITagHelper();
 			main.setVisible(true);
-		}catch(IOException e) {
+			/*
+			JsonObject tags = new JsonObject();
+			for(Entry<String, Integer> tag : ALL_TAGS.entrySet()) {
+				tags.addProperty(tag.getKey(), tag.getValue());
+			}
+			File f = new File("./Tags.json");
+			f.createNewFile();
+			OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(f, true), StandardCharsets.UTF_8);
+			out.write(tags.toString());
+			out.close();*/
+		}catch(Throwable e) {
 			e.printStackTrace();
 		}
 	}
@@ -81,39 +89,38 @@ public class NovelAITagHelper extends JFrame {
 	}
 	
 	void initFrameBounds(Container c) {
-		Font mainFont = new Font(null,0,20);
 		currentCNTags.setBounds(3, 0, 648, 35);
-		currentCNTags.setFont(mainFont);
+		currentCNTags.setFont(font);
 		c.add(currentCNTags);
 		
 		currentENTags.setBounds(3, 36, 648, 35);
-		currentENTags.setFont(mainFont);
+		currentENTags.setFont(font);
 		c.add(currentENTags);
 		
 		GenCNToENButton.setBounds(3, 70, 324, 25);
-		GenCNToENButton.setFont(mainFont);
+		GenCNToENButton.setFont(font);
 		c.add(GenCNToENButton);
 		
 		GenENToCNButton.setBounds(3+324, 70, 324, 25);
-		GenENToCNButton.setFont(mainFont);
+		GenENToCNButton.setFont(font);
 		c.add(GenENToCNButton);
 		
 		ClearButton.setBounds(3, 95, 648, 25);
-		ClearButton.setFont(mainFont);
+		ClearButton.setFont(font);
 		c.add(ClearButton);
 		
 		int y = 120;
 		
 		CacheButton.setBounds(3, y, 150, 40);
-		CacheButton.setFont(mainFont);
+		CacheButton.setFont(font);
 		c.add(CacheButton);
 		
 		SaveToCacheButton.setBounds(3, y+45, 150, 40);
-		SaveToCacheButton.setFont(mainFont);
+		SaveToCacheButton.setFont(font);
 		c.add(SaveToCacheButton);
 		
 		SearchButton.setBounds(3, y+45+45, 150, 40);
-		SearchButton.setFont(mainFont);
+		SearchButton.setFont(font);
 		c.add(SearchButton);
 		
 		JPanel tagBtns = new JPanel();
@@ -213,30 +220,22 @@ public class NovelAITagHelper extends JFrame {
 		});
 	}
 	
-	public static void initTags() throws IOException {
-		{
-			JsonArray tags = parser.parse(new InputStreamReader(NovelAITagHelper.class.getResourceAsStream("/cat/jiu/ai/tags.json"), StandardCharsets.UTF_8)).getAsJsonObject().getAsJsonArray("main");
-			for(int i = 0; i < tags.size(); i++) {
-				JsonArray tag = tags.get(i).getAsJsonArray();
-				String name = tag.get(0).getAsString();
-				int id = tag.get(1).getAsInt();
-				ALL_TAGS.put(name, id);
-			}
+	public static void initTags() {
+		for(Entry<String, JsonElement> tag : parser.parse(new InputStreamReader(NovelAITagHelper.class.getResourceAsStream("/cat/jiu/ai/tags.json"), StandardCharsets.UTF_8)).getAsJsonObject().entrySet()) {
+			ALL_TAGS.put(tag.getKey(), tag.getValue().getAsInt());
 		}
-		{
-			JsonObject tagsFile = parser.parse(new InputStreamReader(NovelAITagHelper.class.getResourceAsStream("/cat/jiu/ai/NovelAITags.json"), StandardCharsets.UTF_8)).getAsJsonObject();
-			for(Entry<String, JsonElement> tag : tagsFile.entrySet()) {
-				String tagName = tag.getKey();
-				JsonElement e = tag.getValue();
-				if(e.isJsonObject()) {
-					tagsMap.put(tagName, initSubTagMap(e.getAsJsonObject()));
-				}else if(e.isJsonArray()) {
-					List<String> tagList = new ArrayList<>();
-					for(int i = 0; i < e.getAsJsonArray().size(); i++) {
-						tagList.add(e.getAsJsonArray().get(i).getAsString());
-					}
-					tagsMap.put(tagName, tagList);
+		
+		for(Entry<String, JsonElement> tag : parser.parse(new InputStreamReader(NovelAITagHelper.class.getResourceAsStream("/cat/jiu/ai/NovelAITags.json"), StandardCharsets.UTF_8)).getAsJsonObject().entrySet()) {
+			String tagName = tag.getKey();
+			JsonElement e = tag.getValue();
+			if(e.isJsonObject()) {
+				tagsMap.put(tagName, initSubTagMap(e.getAsJsonObject()));
+			}else if(e.isJsonArray()) {
+				List<String> tagList = new ArrayList<>();
+				for(int i = 0; i < e.getAsJsonArray().size(); i++) {
+					tagList.add(e.getAsJsonArray().get(i).getAsString());
 				}
+				tagsMap.put(tagName, tagList);
 			}
 		}
 	}
@@ -248,11 +247,17 @@ public class NovelAITagHelper extends JFrame {
 			JsonElement e = tag.getValue();
 			if(e.isJsonObject()) {
 				tags.put(tagName, initSubTagMap(e.getAsJsonObject()));
+			}else if(e.isJsonArray()) {
+				List<String> tagList = new ArrayList<>();
+				for(int i = 0; i < e.getAsJsonArray().size(); i++) {
+					tagList.add(e.getAsJsonArray().get(i).getAsString());
+				}
+				tags.put(tagName, tagList);
 			}else if(e.isJsonPrimitive()) {
 				tags.put(e.getAsString(), tagName);
 				NovelAITagHelper.CnToEntag.put(e.getAsString(), tagName);
 				NovelAITagHelper.EnToCntag.put(tagName, e.getAsString());
-			}	
+			}
 		}
 		return tags;
 	}

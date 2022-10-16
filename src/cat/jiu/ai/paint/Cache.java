@@ -26,16 +26,22 @@ public class Cache {
 	public void add(String cachename, String en, int level) {
 		if(!caches.containsKey(cachename)) caches.put(cachename, Utils.newHashMap());
 		caches.get(cachename).put(en, level);
+		this.save();
+		this.updataFrame();
 	}
 	
 	public void remove(String cachename, String en) {
 		if(caches.containsKey(cachename)) {
 			caches.get(cachename).remove(en);
+			this.save();
+			this.updataFrame();
 		}
 	}
 	
 	public void remove(String cachename) {
 		caches.remove(cachename);
+		this.save();
+		this.updataFrame();
 	}
 	
 	public int getLevel(String cachename, String en) {
@@ -46,6 +52,8 @@ public class Cache {
 	public void addLevel(String cachename, String en) {
 		if(!caches.containsKey(cachename)) caches.put(cachename, Utils.newHashMap());
 		caches.get(cachename).put(en, caches.get(cachename).get(en)+1);
+		this.save();
+		this.updataFrame();
 	}
 	
 	public void subLevel(String cachename, String en) {
@@ -54,7 +62,13 @@ public class Cache {
 			if(caches.get(cachename).get(en)<0) {
 				caches.get(cachename).put(en, 0);
 			}
+			this.save();
+			this.updataFrame();
 		}
+	}
+	
+	public void updataFrame() {
+		if(NovelAITagHelper.main.currentCacheFrame!=null) NovelAITagHelper.main.currentCacheFrame.updataUI();
 	}
 	
 	public String toTag(String cacheName) {
@@ -76,6 +90,10 @@ public class Cache {
 	
 	public Set<Entry<String, Map<String, Integer>>> entrySet() {
 		return this.caches.entrySet();
+	}
+	
+	public Set<String> keySet() {
+		return this.caches.keySet();
 	}
 	
 	public boolean save() {
