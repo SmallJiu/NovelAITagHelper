@@ -40,9 +40,9 @@ public class CacheFrame extends JFrame {
 			public void mouseClicked(MouseEvent e) {
 				DefaultMutableTreeNode node = (DefaultMutableTreeNode)tree.getSelectionPath().getLastPathComponent();
 				String cachename = node.getParent().toString();
-				String tag = Utils.getTag(node.toString().split("=")[0]);
-				caches.addLevel(cachename, tag);
-				node.setUserObject(tag+"="+caches.getLevel(cachename, tag));
+				String tagName = node.toString().split("=")[0];
+				caches.addLevel(cachename, Utils.getTag(tagName));
+				node.setUserObject(tagName+"="+caches.getLevel(cachename, Utils.getTag(tagName)));
 				tree.updateUI();
 				caches.save();
 			}
@@ -51,9 +51,9 @@ public class CacheFrame extends JFrame {
 			public void mouseClicked(MouseEvent e) {
 				DefaultMutableTreeNode node = (DefaultMutableTreeNode)tree.getSelectionPath().getLastPathComponent();
 				String cachename = node.getParent().toString();
-				String tag = Utils.getTag(node.toString().split("=")[0]);
-				caches.subLevel(cachename, tag);
-				node.setUserObject(tag+"="+caches.getLevel(cachename, tag));
+				String tagName = node.toString().split("=")[0];
+				caches.subLevel(cachename, Utils.getTag(tagName));
+				node.setUserObject(tagName+"="+caches.getLevel(cachename, Utils.getTag(tagName)));
 				tree.updateUI();
 				caches.save();
 			}
