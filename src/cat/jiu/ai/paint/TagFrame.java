@@ -29,19 +29,19 @@ public class TagFrame extends JFrame {
 		super.setLayout(new BorderLayout());
 		super.setBounds(main.getX()+main.getWidth(), main.getY(), 256, main.getHeight());
 		
-		JList<String> list = new JList<>();
-		JScrollPane js = new JScrollPane(list);
+		JList<String> taglist = new JList<>();
+		JScrollPane js = new JScrollPane(taglist);
 		DefaultListModel<String> normalModel = new DefaultListModel<>();
 		for(String tag : this.elements) {
 			normalModel.addElement(tag);
 		}
-		list.setFont(NovelAITagHelper.font);
-		list.setModel(normalModel);
+		taglist.setFont(NovelAITagHelper.font);
+		taglist.setModel(normalModel);
 		
-		list.addMouseListener(new MouseAdapter() {
+		taglist.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				if(e.getClickCount() >= 2) {
-					addResultToTag(currentCNTags, list.getSelectedValue());
+					addResultToTag(currentCNTags, taglist.getSelectedValue());
 				}
 			}
 		});
@@ -51,7 +51,7 @@ public class TagFrame extends JFrame {
 		
 		this.getContentPane().add(new SimpleButton(I18n.format("main.cache.add"), new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
-				if(!list.isSelectionEmpty()) {
+				if(!taglist.isSelectionEmpty()) {
 					JDialog choiceCache = new JDialog(TagFrame.this, I18n.format("main.cache.choice_cache"), true);
 					choiceCache.setBounds(TagFrame.this.getX(), TagFrame.this.getY(), 256, TagFrame.this.getHeight());
 					choiceCache.setLayout(new BorderLayout());
@@ -59,7 +59,7 @@ public class TagFrame extends JFrame {
 					JList<String> cachelist = new JList<>();
 					JScrollPane js = new JScrollPane(cachelist);
 					DefaultListModel<String> normalModel = new DefaultListModel<>();
-					for(String name : NovelAITagHelper.main.cache.keySet()) {
+					for(String name : NovelAITagHelper.main.cache.cacheNameSet()) {
 						normalModel.addElement(name);
 					}
 					cachelist.setFont(NovelAITagHelper.font);
@@ -68,7 +68,7 @@ public class TagFrame extends JFrame {
 					cachelist.addMouseListener(new MouseAdapter() {
 						public void mouseClicked(MouseEvent e) {
 							if(e.getClickCount() >= 2) {
-								NovelAITagHelper.main.cache.add(cachelist.getSelectedValue(), list.getSelectedValue(), 0);
+								NovelAITagHelper.main.cache.add(cachelist.getSelectedValue(), Utils.getTag(taglist.getSelectedValue()), 0);
 								choiceCache.dispose();
 							}
 						}

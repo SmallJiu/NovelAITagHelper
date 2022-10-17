@@ -53,17 +53,12 @@ public class Cache {
 		if(!caches.containsKey(cachename)) caches.put(cachename, Utils.newHashMap());
 		caches.get(cachename).put(en, caches.get(cachename).get(en)+1);
 		this.save();
-		this.updataFrame();
 	}
 	
 	public void subLevel(String cachename, String en) {
 		if(caches.containsKey(cachename)) {
 			caches.get(cachename).put(en, caches.get(cachename).get(en)-1);
-			if(caches.get(cachename).get(en)<0) {
-				caches.get(cachename).put(en, 0);
-			}
 			this.save();
-			this.updataFrame();
 		}
 	}
 	
@@ -74,11 +69,18 @@ public class Cache {
 	public String toTag(String cacheName) {
 		StringJoiner tags = new StringJoiner(",");
 		for(Entry<String, Integer> tag : caches.get(cacheName).entrySet()) {
-			if(tag.getValue()>0) {
+			if(tag.getValue() > 0) {
 				StringBuilder t = new StringBuilder(tag.getKey());
 				for(int i = 0; i < tag.getValue(); i++) {
 					t.insert(0, '{');
 					t.append('}');
+				}
+				tags.add(t);
+			}else if(tag.getValue() < 0) {
+				StringBuilder t = new StringBuilder(tag.getKey());
+				for(int i = 0; i < -tag.getValue(); i++) {
+					t.insert(0, '[');
+					t.append(']');
 				}
 				tags.add(t);
 			}else {
@@ -88,11 +90,11 @@ public class Cache {
 		return tags.toString();
 	}
 	
-	public Set<Entry<String, Map<String, Integer>>> entrySet() {
+	public Set<Entry<String, Map<String, Integer>>> cacheSet() {
 		return this.caches.entrySet();
 	}
 	
-	public Set<String> keySet() {
+	public Set<String> cacheNameSet() {
 		return this.caches.keySet();
 	}
 	
@@ -112,7 +114,7 @@ public class Cache {
 			}
 			cacheFile.createNewFile();
 			OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(cacheFile, true), StandardCharsets.UTF_8);
-			out.write(json.toString());
+			out.write(JsonUtil.formatJson(json.toString()));
 			out.close();
 			return true;
 		}catch(IOException e) {

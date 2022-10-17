@@ -13,5 +13,6 @@
 	"main.cache.gen":"生成",
 	"main.cache.del":"删除",
 	"main.cache.choice_cache":"选择要添加到的收藏夹",
-	"main.cache.add":"添加到收藏夹"
+	"main.cache.add":"添加到收藏夹",
+	"main.cache.level":"权重"
 }
