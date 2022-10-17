@@ -36,22 +36,11 @@ public class NovelAITagHelper extends JFrame {
 			initTags();
 			main = new NovelAITagHelper();
 			main.setVisible(true);
-			/*
-			JsonObject tags = new JsonObject();
-			for(Entry<String, Integer> tag : ALL_TAGS.entrySet()) {
-				tags.addProperty(tag.getKey(), tag.getValue());
-			}
-			File f = new File("./Tags.json");
-			f.createNewFile();
-			OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(f, true), StandardCharsets.UTF_8);
-			out.write(tags.toString());
-			out.close();*/
 		}catch(Throwable e) {
 			e.printStackTrace();
 		}
 	}
 	
-	static final Map<String, Integer> ALL_TAGS = new HashMap<>();
 	static final Map<String, Object> tagsMap = new HashMap<>();
 	static final Map<String, String> CnToEntag = new HashMap<>();
 	static final Map<String, String> EnToCntag = new HashMap<>();
@@ -71,7 +60,7 @@ public class NovelAITagHelper extends JFrame {
 	ButtonsFrame currentTagsBtns = null;
 	TagFrame currentSearchTags = null;
 	CacheFrame currentCacheFrame = null;
-	final HashMap<String, Integer> currentTags = new HashMap<>();
+//	final HashMap<String, Integer> currentTags = new HashMap<>();
 	
 	private NovelAITagHelper() {
 		super("NovelAITagHelper");
@@ -83,9 +72,8 @@ public class NovelAITagHelper extends JFrame {
 		Container c = this.getContentPane();
 		this.initFrameBounds(c);
 		cache.read();
-		tags.addAll(ALL_TAGS.keySet());
 		tags.addAll(CnToEntag.keySet());
-		currentTags.keySet();
+//		currentTags.keySet();
 	}
 	
 	void initFrameBounds(Container c) {
@@ -215,21 +203,23 @@ public class NovelAITagHelper extends JFrame {
 		
 		SearchButton.addActionListener(event -> {
 			if(currentSearchTags!=null)currentSearchTags.dispose();
-			currentSearchTags = new TagFrame(main, I18n.format("main.search"), null, ALL_TAGS.keySet());
+			currentSearchTags = new TagFrame(main, I18n.format("main.search"), null, tags);
 			currentSearchTags.setVisible(true);
 		});
 	}
 	
 	public static void initTags() {
-		for(Entry<String, JsonElement> tag : parser.parse(new InputStreamReader(NovelAITagHelper.class.getResourceAsStream("/cat/jiu/ai/tags.json"), StandardCharsets.UTF_8)).getAsJsonObject().entrySet()) {
-			ALL_TAGS.put(tag.getKey(), tag.getValue().getAsInt());
-		}
-		
 		for(Entry<String, JsonElement> tag : parser.parse(new InputStreamReader(NovelAITagHelper.class.getResourceAsStream("/cat/jiu/ai/NovelAITags.json"), StandardCharsets.UTF_8)).getAsJsonObject().entrySet()) {
 			String tagName = tag.getKey();
 			JsonElement e = tag.getValue();
 			if(e.isJsonObject()) {
-				tagsMap.put(tagName, initSubTagMap(e.getAsJsonObject()));
+				if(tagName.contains("未分类(未翻译)")) {
+					for(Entry<String, JsonElement> unI18nTag : e.getAsJsonObject().entrySet()) {
+						tags.add(unI18nTag.getValue().getAsString());
+					}
+				}else {
+					tagsMap.put(tagName, initSubTagMap(e.getAsJsonObject()));
+				}
 			}else if(e.isJsonArray()) {
 				List<String> tagList = new ArrayList<>();
 				for(int i = 0; i < e.getAsJsonArray().size(); i++) {

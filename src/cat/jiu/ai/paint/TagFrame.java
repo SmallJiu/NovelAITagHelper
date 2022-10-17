@@ -99,20 +99,6 @@ public class TagFrame extends JFrame {
 							}
 						}
 					}
-					for(String tag : NovelAITagHelper.CnToEntag.keySet()) {
-						if(tag.contains(searchText.getText())) {
-							if(!TagFrame.this.searchReult.contains(tag)) {
-								TagFrame.this.searchReult.add(tag);
-							}
-						}
-					}
-					for(String tag : NovelAITagHelper.EnToCntag.keySet()) {
-						if(tag.contains(searchText.getText())) {
-							if(!TagFrame.this.searchReult.contains(tag)) {
-								TagFrame.this.searchReult.add(tag);
-							}
-						}
-					}
 					if(TagFrame.this.currentSearch!=null) TagFrame.this.currentSearch.dispose();
 					TagFrame.this.currentSearch = new TagFrame(TagFrame.this, I18n.format("main.search.result"), currentCNTags, TagFrame.this.searchReult);
 					TagFrame.this.currentSearch.setVisible(true);
