@@ -4,9 +4,10 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JDialog;
@@ -16,11 +17,15 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
+import com.google.gson.JsonObject;
+
 public class TagFrame extends JFrame {
 	private static final long serialVersionUID = -120120534058875171L;
-	final List<String> elements;
-	final ArrayList<String> searchReult = new ArrayList<>();
-	TagFrame currentSearch;
+	final ArrayList<String> elements;
+	final ArrayList<String> searchSuccessReult = new ArrayList<>();
+	final ArrayList<String> searchFailReult = new ArrayList<>();
+	TagFrame currentSuccessSearch;
+	TagFrame currentFailSearch;
 	
 	public TagFrame(JFrame main, String title, JTextField currentCNTags, Collection<String> tags) {
 		super(title);
@@ -49,7 +54,10 @@ public class TagFrame extends JFrame {
 		js.setBounds(0, 0, 100, 100);
 		this.getContentPane().add(js, BorderLayout.CENTER);
 		
-		this.getContentPane().add(new SimpleButton(I18n.format("main.cache.add"), new MouseAdapter() {
+		JPanel north = new JPanel();
+		north.setLayout(new FlowLayout(FlowLayout.LEADING,1,1));
+		
+		north.add(new SimpleButton(I18n.format("main.cache.add"), 3,5, new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				if(!taglist.isSelectionEmpty()) {
 					JDialog choiceCache = new JDialog(TagFrame.this, I18n.format("main.cache.choice_cache"), true);
@@ -79,7 +87,18 @@ public class TagFrame extends JFrame {
 					choiceCache.setVisible(true);
 				}
 			}
-		},20), BorderLayout.NORTH);
+		},15));
+		
+		north.add(new SimpleButton(I18n.format("main.search.export"), 3,5, new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				JsonObject export = new JsonObject();
+				for(String tag : elements) {
+					export.addProperty(Utils.getTag(tag), tag);
+				}
+				JsonUtil.toJsonFile("./export -" + title.substring(title.indexOf("- ")+1) + ".json", export, true);
+			}
+		},15));
+		this.getContentPane().add(north, BorderLayout.NORTH);
 		
 		JPanel south = new JPanel();
 		south.setLayout(new FlowLayout(FlowLayout.LEADING,1,1));
@@ -91,21 +110,43 @@ public class TagFrame extends JFrame {
 		south.add(new SimpleButton(I18n.format("main.search"), new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				if(!searchText.getText().isEmpty()) {
-					TagFrame.this.searchReult.clear();
+					TagFrame.this.searchSuccessReult.clear();
+					TagFrame.this.searchFailReult.clear();
+					
 					for(String tag : TagFrame.this.elements) {
 						if(tag.contains(searchText.getText())) {
-							if(!TagFrame.this.searchReult.contains(tag)) {
-								TagFrame.this.searchReult.add(tag);
+							if(!TagFrame.this.searchSuccessReult.contains(tag)) {
+								TagFrame.this.searchSuccessReult.add(tag);
+							}
+						}else {
+							if(!TagFrame.this.searchFailReult.contains(tag)) {
+								TagFrame.this.searchFailReult.add(tag);
 							}
 						}
 					}
-					if(TagFrame.this.currentSearch!=null) TagFrame.this.currentSearch.dispose();
-					TagFrame.this.currentSearch = new TagFrame(TagFrame.this, I18n.format("main.search.result"), currentCNTags, TagFrame.this.searchReult);
-					TagFrame.this.currentSearch.setVisible(true);
+					if(TagFrame.this.currentSuccessSearch!=null) TagFrame.this.currentSuccessSearch.dispose();
+					TagFrame.this.currentSuccessSearch = new TagFrame(TagFrame.this, I18n.format("main.search.result.fuccess") + searchText.getText(), currentCNTags, TagFrame.this.searchSuccessReult);
+					TagFrame.this.currentSuccessSearch.setVisible(true);
+					
+					if(TagFrame.this.currentFailSearch!=null) TagFrame.this.currentFailSearch.dispose();
+					TagFrame.this.currentFailSearch = new TagFrame(TagFrame.this.currentSuccessSearch, I18n.format("main.search.result.fail") + searchText.getText(), currentCNTags, TagFrame.this.searchFailReult);
+					TagFrame.this.currentFailSearch.setVisible(true);
 				}
 			}
 		}, 15));
 		this.getContentPane().add(south, BorderLayout.SOUTH);
+		this.addWindowListener(new WindowAdapter() {
+			public void windowClosed(WindowEvent e) {
+				try{currentSuccessSearch.dispose();}catch (Exception exc) {}
+				currentSuccessSearch = null;
+				
+				try{currentFailSearch.dispose();}catch (Exception exc) {}
+				currentFailSearch = null;
+				System.gc();
+				System.gc();
+				System.gc();
+			}
+		});
 	}
 	
 	protected void addResultToTag(JTextField currentCNTags, String result) {
@@ -113,7 +154,7 @@ public class TagFrame extends JFrame {
 			currentCNTags.setText(currentCNTags.getText()+result+",");
 		}else {
 			String trs = Utils.getTag(result);
-			if(NovelAITagHelper.EnToCntag.containsKey(trs)) {
+			if(NovelAITagHelper.EnToCn.containsKey(trs)) {
 				NovelAITagHelper.main.currentCNTags.setText(NovelAITagHelper.main.currentCNTags.getText()+result+",");
 			}else {
 				NovelAITagHelper.main.currentENTags.setText(NovelAITagHelper.main.currentENTags.getText()+result+",");

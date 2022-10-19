@@ -12,11 +12,17 @@ public class Utils {
 	}
 	
 	public static String getTag(String name) {
-		if(NovelAITagHelper.CnToEntag.containsKey(name)) {
-			return NovelAITagHelper.CnToEntag.get(name);
+		if(NovelAITagHelper.CnToEn.containsKey(name)) {
+			return NovelAITagHelper.CnToEn.get(name);
 		}
-		if(NovelAITagHelper.EnToCntag.containsKey(name)) {
-			return NovelAITagHelper.EnToCntag.get(name);
+		if(NovelAITagHelper.EnToCn.containsKey(name)) {
+			return NovelAITagHelper.EnToCn.get(name);
+		}
+		if(NovelAITagHelper.unClassifyCnToEn.containsKey(name)) {
+			return NovelAITagHelper.unClassifyCnToEn.get(name);
+		}
+		if(NovelAITagHelper.unClassifyEnToCn.containsKey(name)) {
+			return NovelAITagHelper.unClassifyEnToCn.get(name);
 		}
 		return name;
 	}

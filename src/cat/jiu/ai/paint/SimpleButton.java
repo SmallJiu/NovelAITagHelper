@@ -14,6 +14,9 @@ public class SimpleButton extends JButton {
 	public SimpleButton(String text, MouseListener l, int fontSize) {
 		this(text,0,0,10,10,l,fontSize);
 	}
+	public SimpleButton(String text, int width, int height, MouseListener l, int fontSize) {
+		this(text, 0, 0, width, height, l, fontSize);
+	}
 	public SimpleButton(String text, int x, int y, int width, int height, MouseListener l, int fontSize) {
 		super.setBounds(x, y, width, height);
 		super.addMouseListener(l);

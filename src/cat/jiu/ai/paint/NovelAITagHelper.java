@@ -11,9 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.StringJoiner;
 
 import javax.swing.JButton;
@@ -28,6 +26,7 @@ import com.google.gson.JsonParser;
 
 public class NovelAITagHelper extends JFrame {
 	private static final long serialVersionUID = -9066780413956606786L;
+	static final Logger log = new Logger();
 	static NovelAITagHelper main;
 	public static final JsonParser parser = new JsonParser();
 	public static void main(String[] args) {
@@ -40,11 +39,15 @@ public class NovelAITagHelper extends JFrame {
 			e.printStackTrace();
 		}
 	}
+
+	static final HashSet<String> tags = new HashSet<>();
+	static final HashMap<String, Object> tagsMap = new HashMap<>();
+	// for translate
+	static final HashMap<String, String> CnToEn = new HashMap<>();
+	static final HashMap<String, String> EnToCn = new HashMap<>();
+	static final HashMap<String, String> unClassifyCnToEn = new HashMap<>();
+	static final HashMap<String, String> unClassifyEnToCn = new HashMap<>();
 	
-	static final Map<String, Object> tagsMap = new HashMap<>();
-	static final Map<String, String> CnToEntag = new HashMap<>();
-	static final Map<String, String> EnToCntag = new HashMap<>();
-	static final Set<String> tags = new HashSet<>();
 	static final Font font = new Font(null, 0,20);
 	
 	final JTextField currentCNTags = new JTextField(15);
@@ -72,7 +75,8 @@ public class NovelAITagHelper extends JFrame {
 		Container c = this.getContentPane();
 		this.initFrameBounds(c);
 		cache.read();
-		tags.addAll(CnToEntag.keySet());
+		tags.addAll(CnToEn.keySet());
+		tags.addAll(unClassifyCnToEn.keySet());
 //		currentTags.keySet();
 	}
 	
@@ -213,10 +217,12 @@ public class NovelAITagHelper extends JFrame {
 			String tagName = tag.getKey();
 			JsonElement e = tag.getValue();
 			if(e.isJsonObject()) {
-				if(tagName.contains("未分类(未翻译)")) {
+				if(tagName.contains("未分类")) {
 					for(Entry<String, JsonElement> unI18nTag : e.getAsJsonObject().entrySet()) {
-						tags.add(unI18nTag.getValue().getAsString());
+						unClassifyCnToEn.put(unI18nTag.getValue().getAsString(), unI18nTag.getKey());
+						unClassifyEnToCn.put(unI18nTag.getKey(), unI18nTag.getValue().getAsString());
 					}
+					tagsMap.put(tagName, unClassifyCnToEn);
 				}else {
 					tagsMap.put(tagName, initSubTagMap(e.getAsJsonObject()));
 				}
@@ -228,10 +234,31 @@ public class NovelAITagHelper extends JFrame {
 				tagsMap.put(tagName, tagList);
 			}
 		}
+		
+		int entocn = unClassifyEnToCn.size();
+		int cntoen = unClassifyCnToEn.size();
+		log.info("未分类的EN转CN的Tag数: {} 个", entocn);
+		log.info("未分类的CN转EN的Tag数: {} 个", cntoen);
+		log.info("清除已分类的Tag中...");
+		
+		long time = System.currentTimeMillis();
+		
+		for(Entry<String, String> tag : EnToCn.entrySet()) {
+			unClassifyEnToCn.remove(tag.getKey());
+		}
+		
+		unClassifyCnToEn.clear();
+		for(Entry<String, String> tag : unClassifyEnToCn.entrySet()) {
+			unClassifyCnToEn.put(tag.getValue(), tag.getKey());
+		}
+		
+		log.info("成功，耗时 {} 毫秒", System.currentTimeMillis()-time);
+		log.info("剩余的未分类的EN转CN的Tag数: {} 个, 清除了 {} 个已分类Tag.", unClassifyEnToCn.size(), entocn-unClassifyEnToCn.size());
+		log.info("剩余的未分类的CN转EN的Tag数: {} 个, 清除了 {} 个已分类Tag.", unClassifyCnToEn.size(), cntoen-unClassifyCnToEn.size());
 	}
 	
-	static Map<String,Object> initSubTagMap(JsonObject obj) {
-		Map<String,Object> tags = new HashMap<>();
+	static HashMap<String,Object> initSubTagMap(JsonObject obj) {
+		HashMap<String,Object> tags = new HashMap<>();
 		for(Entry<String, JsonElement> tag : obj.entrySet()) {
 			String tagName = tag.getKey();
 			JsonElement e = tag.getValue();
@@ -245,8 +272,8 @@ public class NovelAITagHelper extends JFrame {
 				tags.put(tagName, tagList);
 			}else if(e.isJsonPrimitive()) {
 				tags.put(e.getAsString(), tagName);
-				NovelAITagHelper.CnToEntag.put(e.getAsString(), tagName);
-				NovelAITagHelper.EnToCntag.put(tagName, e.getAsString());
+				NovelAITagHelper.CnToEn.put(e.getAsString(), tagName);
+				NovelAITagHelper.EnToCn.put(tagName, e.getAsString());
 			}
 		}
 		return tags;
