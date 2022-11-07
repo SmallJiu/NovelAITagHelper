@@ -16,5 +16,6 @@
 	"main.cache.del":"删除",
 	"main.cache.choice_cache":"选择要添加到的收藏夹",
 	"main.cache.add":"添加到收藏夹",
-	"main.cache.level":"权重"
+	"main.cache.level":"权重",
+	"main.cache.parent":"拓展自"
 }

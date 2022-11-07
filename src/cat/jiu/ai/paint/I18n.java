@@ -10,8 +10,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public class I18n {
-	private static final HashMap<String, String> langs = Utils.newHashMap();
+	private static final HashMap<String, String> langs = Utils.newLinkedHashMap();
 	static void init() {
+		langs.clear();
 		try(InputStreamReader isr = new InputStreamReader(NovelAITagHelper.class.getResourceAsStream("/cat/jiu/ai/language.json"), StandardCharsets.UTF_8)) {
 			JsonObject file = Cache.parser.parse(isr).getAsJsonObject();
 			for(Entry<String, JsonElement> lang : file.entrySet()) {

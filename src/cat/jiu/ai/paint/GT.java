@@ -16,8 +16,7 @@ public class GT {
 				"&tl=" + langTo +
 				"&dt=t&q=" + URLEncoder.encode(word, "UTF-8");
 		
-		URL obj = new URL(url);
-		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+		HttpURLConnection con = (HttpURLConnection) new URL(url).openConnection();
 		con.setRequestProperty("User-Agent", "Mozilla/5.0");
 		BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
 		String inputLine;
@@ -31,11 +30,11 @@ public class GT {
 
 	private static String parseResult(String inputJson) throws Exception {
 		JsonArray jsonArray = Cache.parser.parse(inputJson).getAsJsonArray();
-		JsonArray jsonArray2 = (JsonArray) jsonArray.get(0);
+		JsonArray jsonArray2 = jsonArray.get(0).getAsJsonArray();
 
 		String result = "";
 		for(int i = 0; i < jsonArray2.size(); i++) {
-			result += ((JsonArray) jsonArray2.get(i)).get(0).toString();
+			result += jsonArray2.get(i).getAsJsonArray().get(0).toString();
 		}
 		return result;
 	}
